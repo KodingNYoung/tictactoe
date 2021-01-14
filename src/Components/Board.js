@@ -19,32 +19,33 @@ class Board extends Component {
     [0, 4, 8],
     [2, 4, 6],
   ];
-
-  // determineWinner = (valueArray) => {
-  //   if (!this.isSpaceAvailable(valueArray)) return undefined;
-
-  // };
-  isWinnerAvailable = (valueArray) => {
-    let winnerAvailable = false;
+  setWinner = (winner) => {
+    this.setState({
+      winner: winner || null,
+    });
+  };
+  getWinningCell = (valueArray) => {
+    let winningCell = undefined;
 
     this.winCellsCombo.forEach((cellCombo) => {
-      // const
+      const cellComboValues = cellCombo.map((cell) => {
+        return valueArray[cell];
+      });
+
       if (
-        valueArray[cellCombo[0]] !== null &&
-        valueArray[cellCombo[0]] === valueArray[cellCombo[1]] &&
-        valueArray[cellCombo[0]] === valueArray[cellCombo[2]]
+        cellComboValues[0] !== null &&
+        cellComboValues[0] === cellComboValues[1] &&
+        cellComboValues[0] === cellComboValues[2]
       ) {
-        winnerAvailable = true;
+        winningCell = cellComboValues;
       }
     });
 
-    return winnerAvailable;
+    return winningCell;
   };
   isGameOver = (valueArray) => {
-    if (
-      this.isWinnerAvailable(valueArray) ||
-      !this.isSpaceAvailable(valueArray)
-    ) {
+    if (this.getWinningCell(valueArray) || !this.isSpaceAvailable(valueArray)) {
+      this.setWinner(this.getWinningCell(valueArray)[0]);
       return true;
     }
     return false;
@@ -53,9 +54,6 @@ class Board extends Component {
     let isCellSpaced = false;
     valueArray.forEach((value) => {
       if (value === null) {
-        // this.setState({
-        //   winner: this.determineWinner(valueArray) || null,
-        // })
         isCellSpaced = true;
       }
     });
@@ -89,7 +87,15 @@ class Board extends Component {
       });
     }
   };
-
+  resetGame = () => {
+    this.setState({
+      // a array with 9 spaces filled with null
+      value: Array(9).fill(null),
+      xIsNext: true,
+      gameOver: false,
+      winner: null,
+    });
+  };
   renderCell = (cell_number) => {
     return (
       <Cell
@@ -106,10 +112,17 @@ class Board extends Component {
     return (
       <div>
         <div className="status">{status}</div>
-        <div className="gameover-text">
-          <p>Gameover!!!</p>
-          <button>reset game</button>
-        </div>
+        {this.state.gameOver && (
+          <div className="gameover-text">
+            <p>
+              <span>Gameover!!!</span>
+              {this.state.winner && (
+                <span>Player {this.state.winner} wins</span>
+              )}
+            </p>
+            <button onClick={this.resetGame}>reset game</button>
+          </div>
+        )}
         <div className="board">
           <div className="board-row">
             {this.renderCell(0)}
